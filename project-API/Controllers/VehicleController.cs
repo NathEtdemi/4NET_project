@@ -23,7 +23,7 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddVehicle")]
-        public IActionResult CreateVehicle(int carModelId, int buildYear, int KmNumber, Energy energy)
+        public IActionResult CreateVehicle(int carModelId, string numberPlate, int buildYear, int KmNumber, Energy energy)
         {
             var dbCarModel = _dataContext.Set<CarModel>()
                 .FirstOrDefault(x => x.Id == carModelId);
@@ -38,6 +38,7 @@ namespace project_API.Controllers
             {
                 VModel = dbCarModel,
                 CarModelId = dbCarModel.Id,
+                NumberPlate = numberPlate,
                 BuildYear = buildYear,
                 KmNumber = KmNumber,
                 EnergySource = energy
@@ -68,6 +69,23 @@ namespace project_API.Controllers
             var dbVehicle = VehicleFactory.ConvertToApiModel(VehicleRepository
                 .Include(x => x.VModel)
                 .Include(x => x.VModel.ModelBrand)
+                .FirstOrDefault(x => x.Id == vehicleId));
+
+            if (dbVehicle == null)
+            {
+                _logger.LogWarning($"No vehicle found with Id: {vehicleId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            return Ok(dbVehicle);
+        }
+
+        [HttpGet("GetWithMaintenances/{vehicleId}")]
+        public IActionResult GetVehicleWithMaintenances(int vehicleId)
+        {
+            var dbVehicle = VehicleFactory.ConvertToApiModel(VehicleRepository
+                .Include(x => x.VModel)
+                .Include(x => x.VModel.ModelBrand)
                 .Include(x => x.Maintenances)
                 .FirstOrDefault(x => x.Id == vehicleId));
 
@@ -81,7 +99,7 @@ namespace project_API.Controllers
         }
 
         [HttpPut("{vehicleId}")]
-        public IActionResult EditVehicle(int vehicleId, int modelId, int buildYear, int kmNumber, Energy energy)
+        public IActionResult EditVehicle(int vehicleId, int modelId, string numberPlate, int buildYear, int kmNumber, Energy energy)
         {
             var dbVehicle = VehicleRepository
                 .FirstOrDefault(x => x.Id == vehicleId);
@@ -103,6 +121,7 @@ namespace project_API.Controllers
 
             dbVehicle.VModel = dbCarModel;
             dbVehicle.CarModelId = modelId;
+            dbVehicle.NumberPlate = numberPlate;
             dbVehicle.BuildYear = buildYear;
             dbVehicle.KmNumber = kmNumber;
             dbVehicle.EnergySource = energy;
@@ -133,5 +152,36 @@ namespace project_API.Controllers
             _logger.LogInformation($"The vehicle with id {vehicleId} has been deleted!");
             return Ok();
         }
+
+
+        
+        [HttpGet("GetMaintenanceOverdueVehicles")]
+        public IActionResult GetMaintenanceOverdueVehicles()
+        {
+            return Ok(VehicleRepository
+                .Include(x => x.VModel)
+                .Include(x => x.VModel.ModelBrand)
+                .Include(x => x.Maintenances)
+                .AsEnumerable()
+                .Select(x =>
+                {
+                    var latestMaintenance = x.Maintenances.OrderByDescending(m => m.CurrentKmNumber).FirstOrDefault();
+                    if (latestMaintenance != null && x.KmNumber - latestMaintenance.CurrentKmNumber > x.VModel.MaintenanceFrequency)
+                    {
+                        var delay = x.KmNumber - latestMaintenance.CurrentKmNumber - x.VModel.MaintenanceFrequency;
+                        return new
+                        {
+                            Vehicle = VehicleFactory.ConvertToApiModel(x),
+                            MaintenanceDelay = delay
+                        };
+                    }
+                    return null;
+                })
+                .Where(x => x != null)
+                .ToList()
+            );
+
+        }
+
     }
 }

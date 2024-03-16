@@ -14,6 +14,7 @@ namespace project_API.Domain.Factories
                 Id = dbEntity.Id,
                 VModel = CarModelFactory.ConvertToApiModel(dbEntity.VModel),
                 ModelId = dbEntity.CarModelId,
+                NumberPlate = dbEntity.NumberPlate,
                 BuildYear = dbEntity.BuildYear,
                 KmNumber = dbEntity.KmNumber,
                 EnergySource = dbEntity.EnergySource,

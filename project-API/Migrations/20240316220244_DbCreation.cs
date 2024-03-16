@@ -5,7 +5,7 @@
 namespace project_API.Migrations
 {
     /// <inheritdoc />
-    public partial class DBCreation : Migration
+    public partial class DbCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,6 +58,7 @@ namespace project_API.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     VModelId = table.Column<int>(type: "INTEGER", nullable: false),
+                    NumberPlate = table.Column<string>(type: "TEXT", nullable: false),
                     CarModelId = table.Column<int>(type: "INTEGER", nullable: false),
                     BuildYear = table.Column<int>(type: "INTEGER", nullable: false),
                     KmNumber = table.Column<int>(type: "INTEGER", nullable: false),

@@ -14,6 +14,8 @@ namespace Shared.ApiModels
 
         public int ModelId { get; set; }
 
+        public string NumberPlate { get; set; }
+
         public int BuildYear { get; set; }
 
         public int KmNumber { get; set; }

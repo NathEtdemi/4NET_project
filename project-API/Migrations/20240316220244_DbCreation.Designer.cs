@@ -10,8 +10,8 @@ using project_API;
 namespace project_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240316205104_DBCreation")]
-    partial class DBCreation
+    [Migration("20240316220244_DbCreation")]
+    partial class DbCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -107,6 +107,10 @@ namespace project_API.Migrations
 
                     b.Property<int>("KmNumber")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("NumberPlate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("VModelId")
                         .HasColumnType("INTEGER");

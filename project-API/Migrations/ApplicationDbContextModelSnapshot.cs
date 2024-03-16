@@ -105,6 +105,10 @@ namespace project_API.Migrations
                     b.Property<int>("KmNumber")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("NumberPlate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("VModelId")
                         .HasColumnType("INTEGER");
 

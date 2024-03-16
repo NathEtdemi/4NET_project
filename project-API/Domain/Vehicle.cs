@@ -8,6 +8,8 @@ namespace project_API.Domain
         
         public CarModel VModel { get; set; }
 
+        public string NumberPlate { get; set; }
+
         public int CarModelId { get; set; }
 
         public int BuildYear { get; set; }
