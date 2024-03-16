@@ -41,7 +41,6 @@ namespace project_API.Controllers
         public IActionResult GetBrands()
         {
             return Ok(BrandRepository
-                .Include(x => x.CarModels)
                 .AsEnumerable()
                 .Select(x => BrandFactory.ConvertToApiModel(x))
                 .ToList()
@@ -51,8 +50,15 @@ namespace project_API.Controllers
         [HttpGet("{brandId}")]
         public IActionResult GetBrand(int brandId)
         {
-            return Ok(BrandFactory.ConvertToApiModel(_dataContext.Set<Brand>()
-                .FirstOrDefault(x => x.Id == brandId)));
+            var dbBrand = BrandFactory.ConvertToApiModel(BrandRepository.FirstOrDefault(x => x.Id == brandId));
+
+            if (dbBrand == null)
+            {
+                _logger.LogWarning($"No brand found with Id: {brandId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            return Ok(dbBrand);
         }
 
         [HttpPut("{brandId}")]
@@ -87,13 +93,19 @@ namespace project_API.Controllers
                 _logger.LogWarning($"No brand found with Id: {brandId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            _dataContext.Set<Brand>()
-                .Remove(dbBrand);
+            BrandRepository.Remove(dbBrand);
 
             _dataContext.SaveChanges();
 
             _logger.LogInformation($"The brand with id {brandId} has been deleted!");
             return Ok();
+        }
+
+        [HttpGet("Count/{brandId}")]
+        public IActionResult GetModelCountByBrand(int brandId)
+        {
+            var brand = BrandRepository.Include(x => x.CarModels).FirstOrDefault(x => x.Id == brandId);
+            return Ok(brand.CarModels.Count());
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Shared.ApiModels
     {
         public int Id { get; set; }
 
+        public CarModelModel VModel { get; set; }
+
         public int ModelId { get; set; }
 
         public int BuildYear { get; set; }

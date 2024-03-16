@@ -6,7 +6,8 @@ namespace project_API.Domain
     {
         public int Id { get; set; }
         
-        public CarModel VehicleModel { get; set; }
+        public CarModel VModel { get; set; }
+
         public int CarModelId { get; set; }
 
         public int BuildYear { get; set; }

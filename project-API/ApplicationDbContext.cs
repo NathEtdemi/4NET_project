@@ -16,22 +16,10 @@ namespace project_API
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Brand>()
-                .HasMany<CarModel>(x => x.CarModels)
-                .WithOne()
-                .HasForeignKey(x => x.BrandId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<CarModel>()
                 .HasOne<Brand>()
                 .WithMany(x => x.CarModels)
                 .HasForeignKey(x => x.BrandId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<CarModel>()
-                .HasMany<Vehicle>(x => x.Vehicles)
-                .WithOne()
-                .HasForeignKey(x => x.CarModelId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Vehicle>()
@@ -43,13 +31,6 @@ namespace project_API
             modelBuilder.Entity<Vehicle>()
                 .HasMany<Maintenance>(x => x.Maintenances)
                 .WithOne()
-                .HasForeignKey(x => x.VehicleId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-
-            modelBuilder.Entity<Maintenance>()
-                .HasOne<Vehicle>()
-                .WithMany(x => x.Maintenances)
                 .HasForeignKey(x => x.VehicleId)
                 .OnDelete(DeleteBehavior.Cascade);
 

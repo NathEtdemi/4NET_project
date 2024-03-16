@@ -15,10 +15,19 @@ namespace project_API.Domain.Factories
             return new BrandModel
             {
                 Id = dbEntity.Id,
-                Name = dbEntity.Name,
-                CarModels = dbEntity.CarModels
-                    .Select(x => CarModelFactory.ConvertToApiModel(x))
-                    .ToList()
+                Name = dbEntity.Name
+            };
+        }
+
+        public static Brand? ConvertToDomainModel(BrandModel? dbEntity)
+        {
+            if (dbEntity == null)
+                return null;
+
+            return new Brand
+            {
+                Id = dbEntity.Id,
+                Name = dbEntity.Name
             };
         }
     }

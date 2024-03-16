@@ -10,6 +10,8 @@ namespace Shared.ApiModels
     {
         public int Id { get; set; }
 
+        public BrandModel ModelBrand { get; set; }
+
         public int BrandId { get; set; }
 
         public string Name { get; set; }

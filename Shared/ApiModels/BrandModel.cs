@@ -11,7 +11,5 @@ namespace Shared.ApiModels
         public int Id { get; set; }
 
         public string Name { get; set; }
-
-        public IList<CarModelModel> CarModels { get; set; } = new List<CarModelModel>();
     }
 }

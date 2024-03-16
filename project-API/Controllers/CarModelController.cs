@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using project_API.Domain;
 using project_API.Domain.Factories;
 using Shared.ApiModels;
+using System.Collections.Generic;
 
 namespace project_API.Controllers
 {
@@ -24,13 +25,23 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddCarModel")]
-        public IActionResult CreateCarModel([FromBody]CarModelModel newCarModelModel)
+        public IActionResult CreateCarModel(int brandId, string name, int maintenanceFrequency)
         {
+            DbSet<Brand> brandRepository = _dataContext.Set<Brand>();
+            var dbBrand = brandRepository
+                .FirstOrDefault(x => x.Id == brandId);
+
+            if (dbBrand == null)
+            {
+                _logger.LogWarning($"No brand found with Id: {brandId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
             var newCarModel = new CarModel()
             {
-                BrandId = newCarModelModel.BrandId,
-                Name = newCarModelModel.Name,
-                MaintenanceFrequency = newCarModelModel.MaintenanceFrequency
+                ModelBrand = dbBrand,
+                BrandId = brandId,
+                Name = name,
+                MaintenanceFrequency = maintenanceFrequency
             };
             CarModelRepository.Add(newCarModel);
 
@@ -42,6 +53,7 @@ namespace project_API.Controllers
         public IActionResult GetCarModels()
         {
             return Ok(CarModelRepository
+                .Include(x => x.ModelBrand)
                 .AsEnumerable()
                 .Select(x => CarModelFactory.ConvertToApiModel(x))
                 .ToList());
@@ -50,30 +62,49 @@ namespace project_API.Controllers
         [HttpGet("{carModelId}")]
         public IActionResult GetCarModel(int carModelId)
         {
-            return Ok(CarModelFactory.ConvertToApiModel(_dataContext.Set<CarModel>()
-                .FirstOrDefault(x => x.Id == carModelId)));
-        }
-
-        [HttpPut("{brandId}")]
-        public IActionResult EditBrand([FromBody] CarModelModel carModelToEdit)
-        {
-            var dbCarModel = CarModelRepository
-                .FirstOrDefault(x => x.Id == carModelToEdit.Id);
+            var dbCarModel = CarModelFactory.ConvertToApiModel(CarModelRepository
+                .Include(x => x.ModelBrand)
+                .FirstOrDefault(x => x.Id == carModelId));
 
             if (dbCarModel == null)
             {
-                _logger.LogWarning($"No CarModel found with Id: {carModelToEdit.Id}");
+                _logger.LogWarning($"No car model found with Id: {carModelId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            dbCarModel.Name = carModelToEdit.Name;
-            dbCarModel.BrandId = carModelToEdit.BrandId;
-            dbCarModel.MaintenanceFrequency = carModelToEdit.MaintenanceFrequency;
+            return Ok(dbCarModel);
+        }
+
+        [HttpPut("{carModelId}")]
+        public IActionResult EditCarModel(int carModelId, int brandId, string name, int maintenanceFrequency)
+        {
+            var dbCarModel = CarModelRepository
+                .FirstOrDefault(x => x.Id == carModelId);
+
+            if (dbCarModel == null)
+            {
+                _logger.LogWarning($"No CarModel found with Id: {carModelId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            DbSet<Brand> brandRepository = _dataContext.Set<Brand>();
+            var dbBrand = brandRepository
+                .FirstOrDefault(x => x.Id == brandId);
+
+            if (dbBrand == null)
+            {
+                _logger.LogWarning($"No brand found with Id: {brandId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            dbCarModel.ModelBrand = dbBrand;
+            dbCarModel.BrandId = brandId;
+            dbCarModel.Name = name;
+            dbCarModel.MaintenanceFrequency = maintenanceFrequency;
 
             CarModelRepository.Update(dbCarModel);
 
             _dataContext.SaveChanges();
-            _logger.LogInformation($"The brand with Id: {dbCarModel.Id} and name: {dbCarModel.Name} has been edited");
+            _logger.LogInformation($"The car model with Id: {dbCarModel.Id} and name: {dbCarModel.Name} has been edited");
             return Ok();
         }
 
@@ -88,8 +119,7 @@ namespace project_API.Controllers
                 _logger.LogWarning($"No car model found with Id: {carModelId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            _dataContext.Set<CarModel>()
-                .Remove(dbCarModel);
+            CarModelRepository.Remove(dbCarModel);
 
             _dataContext.SaveChanges();
 

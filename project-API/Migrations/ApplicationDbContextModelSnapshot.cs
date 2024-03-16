@@ -43,6 +43,9 @@ namespace project_API.Migrations
                     b.Property<int>("MaintenanceFrequency")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("ModelBrandId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -50,6 +53,8 @@ namespace project_API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
+
+                    b.HasIndex("ModelBrandId");
 
                     b.ToTable("CarModel");
                 });
@@ -100,14 +105,14 @@ namespace project_API.Migrations
                     b.Property<int>("KmNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("VehicleModelId")
+                    b.Property<int>("VModelId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CarModelId");
 
-                    b.HasIndex("VehicleModelId");
+                    b.HasIndex("VModelId");
 
                     b.ToTable("Vehicle");
                 });
@@ -119,6 +124,14 @@ namespace project_API.Migrations
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("project_API.Domain.Brand", "ModelBrand")
+                        .WithMany()
+                        .HasForeignKey("ModelBrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ModelBrand");
                 });
 
             modelBuilder.Entity("project_API.Domain.Maintenance", b =>
@@ -146,13 +159,13 @@ namespace project_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("project_API.Domain.CarModel", "VehicleModel")
+                    b.HasOne("project_API.Domain.CarModel", "VModel")
                         .WithMany()
-                        .HasForeignKey("VehicleModelId")
+                        .HasForeignKey("VModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("VehicleModel");
+                    b.Navigation("VModel");
                 });
 
             modelBuilder.Entity("project_API.Domain.Brand", b =>
