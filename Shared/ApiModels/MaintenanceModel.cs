@@ -1,10 +1,14 @@
-﻿namespace project_API.Domain
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Shared.ApiModels
 {
-    public class Maintenance
+    public class MaintenanceModel
     {
         public int Id { get; set; }
-
-        public Vehicle MaintainedVehicle { get; set; }
 
         public int VehicleId { get; set; }
 

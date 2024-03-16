@@ -1,6 +1,12 @@
-﻿namespace project_API.Domain
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Shared.ApiModels
 {
-    public class CarModel
+    public class CarModelModel
     {
         public int Id { get; set; }
 
@@ -10,7 +16,5 @@
 
         // Fréquence d'entretien en nombre de km (exemple: tous les 20 000 km)
         public int MaintenanceFrequency { get; set; }
-
-        public List<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }
 }

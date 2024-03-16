@@ -6,8 +6,8 @@ namespace project_API.Domain
     {
         public int Id { get; set; }
         
-        public CarModel Model { get; set; }
-        public int ModelId { get; set; }
+        public CarModel VehicleModel { get; set; }
+        public int CarModelId { get; set; }
 
         public int BuildYear { get; set; }
 
@@ -15,6 +15,6 @@ namespace project_API.Domain
 
         public Energy EnergySource { get; set; }
 
-        public List<Maintenance> Maintenances { get; set; }
+        public List<Maintenance> Maintenances { get; set; } = new List<Maintenance>();
     }
 }

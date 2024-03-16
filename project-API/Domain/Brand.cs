@@ -6,6 +6,6 @@
 
         public string Name { get; set; }
 
-        public List<CarModel> CarModels { get; set; }
+        public List<CarModel> CarModels { get; set; } = new List<CarModel>();
     }
 }
