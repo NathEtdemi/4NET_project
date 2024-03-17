@@ -64,7 +64,7 @@ namespace project_API.Controllers
                 );
         }
 
-        [HttpGet("{vehicleId}")]
+        [HttpGet("FullVehicle")]
         public IActionResult GetVehicle(int vehicleId)
         {
             var dbVehicle = VehicleFactory.ConvertToApiModel(VehicleRepository

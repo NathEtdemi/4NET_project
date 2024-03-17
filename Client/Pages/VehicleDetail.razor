@@ -41,7 +41,7 @@ else
 	{
 		try
 		{
-			Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetVehicle?vehicleId={VehicleId}");
+			Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/FullVehicle?vehicleId={VehicleId}");
 		}
 		catch (Exception e)
 		{
