@@ -1,0 +1,117 @@
+﻿@using Shared.ApiModels
+@using Shared
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
+@page "/vehicules"
+
+<h3>Véhicules</h3>
+<button class="btn btn-primary" @onclick="OpenAddModal">Ajouter</button>
+
+<AddVehicleForm OnAdd="OnAddVehicle" />
+
+@if (_vehicles == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<table class="table table-striped table-bordered text-center">
+		<thead>
+			<tr>
+				<th>Marque</th>
+				<th>Modèle</th>
+				<th>Immatriculation</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var vehicle in _vehicles)
+			{
+				<tr>
+					<td>@vehicle.VModel.ModelBrand.Name</td>
+					<td>@vehicle.VModel.Name</td>
+					<td>@vehicle.NumberPlate</td>
+					<td><button class="btn btn-danger" 
+					            @onclick="@(()=>OnDelete(vehicle))">Delete</button></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+}
+
+@code {
+	private IList<VehicleModel>? _vehicles;
+
+	private enum ModalMode
+	{
+		Add,
+		Duplicate,
+		Rename,
+		Closed
+	}
+
+	private ModalMode _modalMode=ModalMode.Closed;
+
+	public string? NewNumberPlate { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		_vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+	}
+
+	private async Task OnDelete(VehicleModel vehicle)
+	{
+		var popupResult = await JSRuntime.InvokeAsync<bool>
+			("confirm", $"Etes vous sur de vouloir supprimer le véhicule avec cette immatriculation:  '{vehicle.NumberPlate}'?");
+
+		if (popupResult == true)
+		{
+			var httpStatus = await HttpClient.DeleteAsync($"api/Vehicle/{vehicle.Id}");
+			if (!httpStatus.IsSuccessStatusCode)
+			{
+				await JSRuntime.InvokeVoidAsync("alert", httpStatus.ReasonPhrase);
+			}
+		}
+
+        
+
+		_vehicles
+			= await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+	}
+
+	private async Task OnAddVehicle((string, int, int, int, Energy) data)
+	{
+		var (numberPlate, carModelId, buildYear, kmNumber, energy) = data;
+
+		var response = await HttpClient.PostAsync($"api/Vehicle/AddVehicle?numberPlate={Uri.EscapeDataString(numberPlate)}&carModelId={carModelId}&buildYear={buildYear}&KmNumber={kmNumber}&energy={energy}", null);
+		if (response.IsSuccessStatusCode)
+		{
+			await LoadVehicles();
+			CloseModal();
+		}
+		else
+		{
+			var errorMessage = await response.Content.ReadAsStringAsync();
+			await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+		}
+	}
+
+
+	private void OpenAddModal()
+	{
+		Console.WriteLine("OpenAddModal() called");
+		_modalMode = ModalMode.Add;
+	}
+
+	private void CloseModal()
+	{
+		_modalMode = ModalMode.Closed;
+	}
+
+	private async Task LoadVehicles()
+	{
+		_vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+	}
+}

@@ -1,0 +1,63 @@
+﻿@using Shared
+@code {
+    private string NewNumberPlate { get; set; }
+    private int CarModelId { get; set; }
+    private int BuildYear { get; set; }
+    private int KmNumber { get; set; }
+    private Energy EnergySource { get; set; }
+
+    private async Task OnSubmit()
+    {
+        // Appeler votre méthode de création de véhicule avec les données du formulaire
+        await OnAdd.InvokeAsync((NewNumberPlate, CarModelId, BuildYear, KmNumber, EnergySource));
+    }
+}
+
+<EditForm OnValidSubmit="@OnSubmit">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Ajouter un véhicule</h5>
+            <button type="button" class="btn-close" @onclick="CloseModal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label for="numberPlate" class="form-label">Immatriculation</label>
+                <input type="text" class="form-control" id="numberPlate" @bind="@NewNumberPlate" />
+            </div>
+            <div class="mb-3">
+                <label for="carModelId" class="form-label">Modèle de voiture</label>
+                <input type="number" class="form-control" id="carModelId" @bind="@CarModelId" />
+            </div>
+            <div class="mb-3">
+                <label for="buildYear" class="form-label">Année de construction</label>
+                <input type="number" class="form-control" id="buildYear" @bind="@BuildYear" />
+            </div>
+            <div class="mb-3">
+                <label for="kmNumber" class="form-label">Nombre de kilomètres</label>
+                <input type="number" class="form-control" id="kmNumber" @bind="@KmNumber" />
+            </div>
+            <div class="mb-3">
+                <label for="energySource" class="form-label">Source d'énergie</label>
+                <select class="form-select" id="energySource" @bind="@EnergySource">
+                    <option value="Essence">Essence</option>
+                    <option value="Diesel">Diesel</option>
+                    <!-- Ajoutez d'autres options selon vos besoins -->
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @onclick="CloseModal">Annuler</button>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public EventCallback<(string, int, int, int, Energy)> OnAdd { get; set; }
+
+    private void CloseModal()
+    {
+        // Fermer le modal
+    }
+}

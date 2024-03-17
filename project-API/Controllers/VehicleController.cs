@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using project_API.Domain;
 using project_API.Domain.Factories;
 using Shared;
+using static Client.Pages.Index;
 
 namespace project_API.Controllers
 {
@@ -158,7 +159,7 @@ namespace project_API.Controllers
         [HttpGet("GetMaintenanceOverdueVehicles")]
         public IActionResult GetMaintenanceOverdueVehicles()
         {
-            return Ok(VehicleRepository
+            var overdueVehicles = VehicleRepository
                 .Include(x => x.VModel)
                 .Include(x => x.VModel.ModelBrand)
                 .Include(x => x.Maintenances)
@@ -169,7 +170,7 @@ namespace project_API.Controllers
                     if (latestMaintenance != null && x.KmNumber - latestMaintenance.CurrentKmNumber > x.VModel.MaintenanceFrequency)
                     {
                         var delay = x.KmNumber - latestMaintenance.CurrentKmNumber - x.VModel.MaintenanceFrequency;
-                        return new
+                        return new OverdueVehicle
                         {
                             Vehicle = VehicleFactory.ConvertToApiModel(x),
                             MaintenanceDelay = delay
@@ -178,9 +179,9 @@ namespace project_API.Controllers
                     return null;
                 })
                 .Where(x => x != null)
-                .ToList()
-            );
+                .ToList();
 
+            return Ok(overdueVehicles);
         }
 
     }

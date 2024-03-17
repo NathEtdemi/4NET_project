@@ -1,0 +1,53 @@
+﻿@page "/VehiculeDetail/{VehicleId:int}"
+@using System.Net.Http
+@using System.Text.Json
+@using Shared.ApiModels
+@inject HttpClient HttpClient
+
+@if (Vehicle == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<h3>Vehicule: @Vehicle.NumberPlate</h3>
+
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Name</th>
+			<th>Unit of measurement</th>
+			<th>Value</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var parameter in Vehicle.Maintenances)
+		{
+			<tr>
+				<td>@parameter.CurrentKmNumber</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}
+
+@code {
+	[Parameter]
+	public int VehicleId { get; set; }
+
+	private VehicleModel? Vehicle { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetVehicle?vehicleId={VehicleId}");
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+			throw;
+		}
+		
+	}
+}
