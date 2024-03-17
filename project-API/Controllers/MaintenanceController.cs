@@ -22,7 +22,7 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddMaintenance")]
-        public IActionResult CreateMaintenance(int vehicleId, int currentKmNumber, string workDescription)
+        public IActionResult CreateMaintenance(int vehicleId, string workDescription)
         {
             var dbVehicle = _dataContext.Set<Vehicle>().FirstOrDefault(x => x.Id == vehicleId);
 
@@ -36,7 +36,7 @@ namespace project_API.Controllers
             {
                 MaintainedVehicle = dbVehicle,
                 VehicleId = vehicleId,
-                CurrentKmNumber = currentKmNumber,
+                CurrentKmNumber = dbVehicle.KmNumber,
                 WorkDescription = workDescription
             };
             MaintenanceRepository.Add(newMaintenance);
