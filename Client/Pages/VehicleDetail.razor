@@ -30,6 +30,8 @@ else
                     </tr>
                 </tbody>
             </table>
+            <!-- Ajout du bouton Modifier -->
+            <button class="btn btn-primary" @onclick="ModifierClicked">Modifier</button>
         </div>
         <div class="col-md-6">
             <h3>Détails des entretiens</h3>
@@ -57,14 +59,60 @@ else
     </div>
 }
 
+@if (IsEditing)
+{
+    <div class="modal fade show" style="display: block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier les informations du véhicule</h5>
+                    <button type="button" class="close" @onclick="CancelEdit">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @onsubmit="SaveChanges">
+                        <!-- Ajoutez les champs de formulaire pour modifier les informations du véhicule -->
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuler</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public int VehicleId { get; set; }
 
     private VehicleModel Vehicle { get; set; }
+    private bool IsEditing { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetWithMaintenances?vehicleId={VehicleId}");
     }
+
+    // Méthode appelée lorsque le bouton Modifier est cliqué
+    private void ModifierClicked()
+    {
+        IsEditing = true;
+    }
+
+    // Méthode appelée lorsque le formulaire est soumis pour enregistrer les modifications
+    private async Task SaveChanges()
+    {
+        // Mettez ici le code pour enregistrer les modifications
+        // Par exemple, vous pouvez envoyer une requête HTTP PUT pour mettre à jour les informations du véhicule
+        // Assurez-vous d'ajouter la logique appropriée pour gérer les erreurs et les succès de la mise à jour
+        IsEditing = false;
+    }
+
+    // Méthode appelée lorsque l'édition est annulée
+    private void CancelEdit()
+    {
+        IsEditing = false;
+    }
 }
+
