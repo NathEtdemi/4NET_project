@@ -37,7 +37,12 @@ namespace project_API.Controllers
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            var newVehicle = new Vehicle()
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var newVehicle = new Vehicle()
             {
                 CarModel = dbCarModel,
                 CarModelId = dbCarModel.Id,

@@ -33,7 +33,12 @@ namespace project_API.Controllers
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            var newMaintenance = new Maintenance()
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var newMaintenance = new Maintenance()
             {
                 Vehicle = dbVehicle,
                 VehicleId = maintenanceFormModel.VehicleId,

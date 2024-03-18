@@ -37,7 +37,13 @@ namespace project_API.Controllers
                 _logger.LogWarning($"No brand found with Id: {carModelFormModel.BrandId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            var newCarModel = new CarModel()
+
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var newCarModel = new CarModel()
             {
                 Brand = dbBrand,
                 BrandId = carModelFormModel.BrandId,
@@ -127,5 +133,27 @@ namespace project_API.Controllers
             _logger.LogInformation($"The car model with id {carModelId} has been deleted!");
             return Ok();
         }
+
+        [HttpGet("GetCarModelsByBrand")]
+        public IActionResult GetCarModelsByBrand(int brandId)
+        {
+			var dbBrand = _dataContext.Set<Brand>()
+				.FirstOrDefault(x => x.Id == brandId);
+
+			if (dbBrand == null)
+			{
+				_logger.LogWarning($"No brand found with Id: {brandId}");
+				return StatusCode(StatusCodes.Status404NotFound);
+			}
+
+            var dbCarModel = CarModelRepository
+                .Include(x => x.Brand)
+				.AsEnumerable()
+				.Select(x => CarModelFactory.ConvertToApiModel(x))
+                .Where(x => x.BrandId == brandId)
+				.ToList();
+
+			return Ok(dbCarModel);
+		}
     }
 }
