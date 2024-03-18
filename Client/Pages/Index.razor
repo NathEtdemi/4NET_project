@@ -22,8 +22,8 @@
             @foreach (var vehicle in _overdueVehicles)
             {
                 <tr>
-					<td><a href="@($"VehiculeDetail/{vehicle.Vehicle.Id}")">@vehicle.Vehicle.VModel.ModelBrand.Name</a></td>
-	                <td>@vehicle.Vehicle.VModel.Name</td>
+					<td><a href="@($"VehiculeDetail/{vehicle.Vehicle.Id}")">@vehicle.Vehicle.CarModel.Brand.Name</a></td>
+					<td>@vehicle.Vehicle.CarModel.Name</td>
 	                <td>@vehicle.Vehicle.NumberPlate</td>
 	                <td>-@vehicle.MaintenanceDelay</td>
                 </tr>

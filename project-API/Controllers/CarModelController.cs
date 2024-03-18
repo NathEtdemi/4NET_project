@@ -38,7 +38,7 @@ namespace project_API.Controllers
             }
             var newCarModel = new CarModel()
             {
-                ModelBrand = dbBrand,
+                Brand = dbBrand,
                 BrandId = brandId,
                 Name = name,
                 MaintenanceFrequency = maintenanceFrequency
@@ -53,7 +53,7 @@ namespace project_API.Controllers
         public IActionResult GetCarModels()
         {
             return Ok(CarModelRepository
-                .Include(x => x.ModelBrand)
+                .Include(x => x.Brand)
                 .AsEnumerable()
                 .Select(x => CarModelFactory.ConvertToApiModel(x))
                 .ToList());
@@ -63,7 +63,7 @@ namespace project_API.Controllers
         public IActionResult GetCarModel(int carModelId)
         {
             var dbCarModel = CarModelFactory.ConvertToApiModel(CarModelRepository
-                .Include(x => x.ModelBrand)
+                .Include(x => x.Brand)
                 .FirstOrDefault(x => x.Id == carModelId));
 
             if (dbCarModel == null)
@@ -96,7 +96,7 @@ namespace project_API.Controllers
                 _logger.LogWarning($"No brand found with Id: {brandId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            dbCarModel.ModelBrand = dbBrand;
+            dbCarModel.Brand = dbBrand;
             dbCarModel.BrandId = brandId;
             dbCarModel.Name = name;
             dbCarModel.MaintenanceFrequency = maintenanceFrequency;

@@ -12,8 +12,8 @@ namespace project_API.Domain.Factories
             return new VehicleModel
             {
                 Id = dbEntity.Id,
-                VModel = CarModelFactory.ConvertToApiModel(dbEntity.VModel),
-                ModelId = dbEntity.CarModelId,
+				CarModel = CarModelFactory.ConvertToApiModel(dbEntity.CarModel),
+                CarModelId = dbEntity.CarModelId,
                 NumberPlate = dbEntity.NumberPlate,
                 BuildYear = dbEntity.BuildYear,
                 KmNumber = dbEntity.KmNumber,

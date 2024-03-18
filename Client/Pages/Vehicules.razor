@@ -29,8 +29,8 @@ else
 			@foreach (var vehicle in _vehicles)
 			{
 				<tr>
-					<td>@vehicle.VModel.ModelBrand.Name</td>
-					<td>@vehicle.VModel.Name</td>
+					<td>@vehicle.CarModel.Brand.Name</td>
+					<td>@vehicle.CarModel.Name</td>
 					<td>@vehicle.NumberPlate</td>
 					<td><button class="btn btn-danger" 
 					            @onclick="@(()=>OnDelete(vehicle))">Delete</button></td>

@@ -17,20 +17,20 @@ namespace project_API
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<CarModel>()
-                .HasOne<Brand>()
+                .HasOne(e => e.Brand)
                 .WithMany(x => x.CarModels)
                 .HasForeignKey(x => x.BrandId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Vehicle>()
-                .HasOne<CarModel>()
+                .HasOne(e => e.CarModel)
                 .WithMany(x => x.Vehicles)
                 .HasForeignKey(x => x.CarModelId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Vehicle>()
-                .HasMany<Maintenance>(x => x.Maintenances)
-                .WithOne()
+                .HasMany(x => x.Maintenances)
+                .WithOne(e => e.Vehicle)
                 .HasForeignKey(x => x.VehicleId)
                 .OnDelete(DeleteBehavior.Cascade);
 

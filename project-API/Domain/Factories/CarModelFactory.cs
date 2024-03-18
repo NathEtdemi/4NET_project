@@ -13,7 +13,7 @@ namespace project_API.Domain.Factories
             return new CarModelModel
             {
                 Id = dbEntity.Id,
-                ModelBrand = BrandFactory.ConvertToApiModel(dbEntity.ModelBrand),
+                Brand = BrandFactory.ConvertToApiModel(dbEntity.Brand),
                 BrandId = dbEntity.BrandId,
                 Name = dbEntity.Name,
                 MaintenanceFrequency = dbEntity.MaintenanceFrequency,

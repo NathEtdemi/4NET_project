@@ -5,7 +5,7 @@
 namespace project_API.Migrations
 {
     /// <inheritdoc />
-    public partial class DbCreation : Migration
+    public partial class DBCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,9 +29,8 @@ namespace project_API.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ModelBrandId = table.Column<int>(type: "INTEGER", nullable: false),
                     BrandId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
                     MaintenanceFrequency = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -43,12 +42,6 @@ namespace project_API.Migrations
                         principalTable: "Brand",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CarModel_Brand_ModelBrandId",
-                        column: x => x.ModelBrandId,
-                        principalTable: "Brand",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -57,8 +50,7 @@ namespace project_API.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    VModelId = table.Column<int>(type: "INTEGER", nullable: false),
-                    NumberPlate = table.Column<string>(type: "TEXT", nullable: false),
+                    NumberPlate = table.Column<string>(type: "TEXT", maxLength: 9, nullable: false),
                     CarModelId = table.Column<int>(type: "INTEGER", nullable: false),
                     BuildYear = table.Column<int>(type: "INTEGER", nullable: false),
                     KmNumber = table.Column<int>(type: "INTEGER", nullable: false),
@@ -73,12 +65,6 @@ namespace project_API.Migrations
                         principalTable: "CarModel",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Vehicle_CarModel_VModelId",
-                        column: x => x.VModelId,
-                        principalTable: "CarModel",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -87,7 +73,6 @@ namespace project_API.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    MaintainedVehicleId = table.Column<int>(type: "INTEGER", nullable: false),
                     VehicleId = table.Column<int>(type: "INTEGER", nullable: false),
                     CurrentKmNumber = table.Column<int>(type: "INTEGER", nullable: false),
                     WorkDescription = table.Column<string>(type: "TEXT", nullable: false)
@@ -95,12 +80,6 @@ namespace project_API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Maintenance", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Maintenance_Vehicle_MaintainedVehicleId",
-                        column: x => x.MaintainedVehicleId,
-                        principalTable: "Vehicle",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Maintenance_Vehicle_VehicleId",
                         column: x => x.VehicleId,
@@ -115,16 +94,6 @@ namespace project_API.Migrations
                 column: "BrandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CarModel_ModelBrandId",
-                table: "CarModel",
-                column: "ModelBrandId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Maintenance_MaintainedVehicleId",
-                table: "Maintenance",
-                column: "MaintainedVehicleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Maintenance_VehicleId",
                 table: "Maintenance",
                 column: "VehicleId");
@@ -133,11 +102,6 @@ namespace project_API.Migrations
                 name: "IX_Vehicle_CarModelId",
                 table: "Vehicle",
                 column: "CarModelId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vehicle_VModelId",
-                table: "Vehicle",
-                column: "VModelId");
         }
 
         /// <inheritdoc />

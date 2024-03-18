@@ -11,7 +11,7 @@ namespace Shared.ApiModels
     {
         public int Id { get; set; }
 
-        public BrandModel ModelBrand { get; set; }
+        public BrandModel Brand { get; set; }
 
         [Required(ErrorMessage = "Le champ est requis")]
         public int BrandId { get; set; }

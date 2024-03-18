@@ -6,7 +6,7 @@ namespace project_API.Domain
     {
         public int Id { get; set; }
 
-        public Brand ModelBrand { get; set; }
+        public Brand Brand { get; set; }
 
         [Required(ErrorMessage = "Le champ est requis")]
         public int BrandId { get; set; }

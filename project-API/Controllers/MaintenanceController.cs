@@ -34,7 +34,7 @@ namespace project_API.Controllers
 
             var newMaintenance = new Maintenance()
             {
-                MaintainedVehicle = dbVehicle,
+                Vehicle = dbVehicle,
                 VehicleId = vehicleId,
                 CurrentKmNumber = dbVehicle.KmNumber,
                 WorkDescription = workDescription
@@ -89,7 +89,7 @@ namespace project_API.Controllers
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-            dbMaintenance.MaintainedVehicle = dbVehicle;
+            dbMaintenance.Vehicle = dbVehicle;
             dbMaintenance.VehicleId = vehicleId;
             dbMaintenance.CurrentKmNumber = currentKmNumber;
             dbMaintenance.WorkDescription = workDescription;

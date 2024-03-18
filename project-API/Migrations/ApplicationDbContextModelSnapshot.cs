@@ -43,18 +43,14 @@ namespace project_API.Migrations
                     b.Property<int>("MaintenanceFrequency")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ModelBrandId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
-
-                    b.HasIndex("ModelBrandId");
 
                     b.ToTable("CarModel");
                 });
@@ -68,9 +64,6 @@ namespace project_API.Migrations
                     b.Property<int>("CurrentKmNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("MaintainedVehicleId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("VehicleId")
                         .HasColumnType("INTEGER");
 
@@ -79,8 +72,6 @@ namespace project_API.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MaintainedVehicleId");
 
                     b.HasIndex("VehicleId");
 
@@ -107,69 +98,47 @@ namespace project_API.Migrations
 
                     b.Property<string>("NumberPlate")
                         .IsRequired()
+                        .HasMaxLength(9)
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("VModelId")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CarModelId");
-
-                    b.HasIndex("VModelId");
 
                     b.ToTable("Vehicle");
                 });
 
             modelBuilder.Entity("project_API.Domain.CarModel", b =>
                 {
-                    b.HasOne("project_API.Domain.Brand", null)
+                    b.HasOne("project_API.Domain.Brand", "Brand")
                         .WithMany("CarModels")
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("project_API.Domain.Brand", "ModelBrand")
-                        .WithMany()
-                        .HasForeignKey("ModelBrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ModelBrand");
+                    b.Navigation("Brand");
                 });
 
             modelBuilder.Entity("project_API.Domain.Maintenance", b =>
                 {
-                    b.HasOne("project_API.Domain.Vehicle", "MaintainedVehicle")
-                        .WithMany()
-                        .HasForeignKey("MaintainedVehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("project_API.Domain.Vehicle", null)
+                    b.HasOne("project_API.Domain.Vehicle", "Vehicle")
                         .WithMany("Maintenances")
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MaintainedVehicle");
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("project_API.Domain.Vehicle", b =>
                 {
-                    b.HasOne("project_API.Domain.CarModel", null)
+                    b.HasOne("project_API.Domain.CarModel", "CarModel")
                         .WithMany("Vehicles")
                         .HasForeignKey("CarModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("project_API.Domain.CarModel", "VModel")
-                        .WithMany()
-                        .HasForeignKey("VModelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("VModel");
+                    b.Navigation("CarModel");
                 });
 
             modelBuilder.Entity("project_API.Domain.Brand", b =>

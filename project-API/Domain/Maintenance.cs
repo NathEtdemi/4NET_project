@@ -6,7 +6,7 @@ namespace project_API.Domain
     {
         public int Id { get; set; }
 
-        public Vehicle MaintainedVehicle { get; set; }
+        public Vehicle Vehicle { get; set; }
 
         [Required(ErrorMessage = "Le champ est requis")]
         public int VehicleId { get; set; }
