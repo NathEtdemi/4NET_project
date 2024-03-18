@@ -36,7 +36,8 @@ else
             <button class="btn btn-primary" @onclick="ModifierClicked">Modifier</button>
         </div>
         <div class="col-md-6">
-            <h3>Détails des entretiens</h3>
+	        <h3>Détails des entretiens</h3>
+	        <button class="btn btn-primary" @onclick="AjouterMaintenance">Ajouter</button>
             <table class="table">
                 <thead>
                     <tr>
@@ -50,7 +51,6 @@ else
                         <tr>
                             <td>@maintenance.CurrentKmNumber</td>
                             <td>@maintenance.WorkDescription</td>
-                            <!-- Ajoutez d'autres colonnes pour les autres propriétés de l'entretien -->
                         </tr>
                     }
                 </tbody>
@@ -114,6 +114,32 @@ else
     </div>
 }
 
+@if (IsAdd)
+{
+
+    <div class="modal fade show" style="display: block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"> Ajouter une maintenance</h5>
+                    <button type="button" class="close" @onclick="CancelAdd">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @onsubmit="SaveChanges">
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" class="form-control" id="description" @bind="FormMaintenance.WorkDescription"/>
+                        </div>
+                        <button type="submit" class="btn btn-primary" @onclick="Add">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary" @onclick="CancelAdd">Annuler</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [Parameter]
@@ -121,7 +147,9 @@ else
 
     private VehicleModel Vehicle { get; set; }
     private VehicleFormModel FormVehicle { get; set; }
+    private MaintenanceFormModel FormMaintenance { get; set; }
     private bool IsEditing { get; set; }
+    private bool IsAdd { get; set; }
     private List<CarModelModel> CarModels { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -136,6 +164,11 @@ else
                 KmNumber = Vehicle.KmNumber,
                 EnergySource = Vehicle.EnergySource
             };
+
+        FormMaintenance = new MaintenanceFormModel
+        {
+            VehicleId = Vehicle.Id
+        };
         await GetCarModelsByBrand(Vehicle.CarModel.BrandId);
     }
 
@@ -165,9 +198,33 @@ else
 		}
 	}
 
+    private async Task Add()
+    {
+        var response = await HttpClient.PostAsJsonAsync($"api/Maintenance/AddMaintenance", FormMaintenance);
+        if (response.IsSuccessStatusCode)
+        {
+	        IsAdd = false;
+	        Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetWithMaintenances?vehicleId={VehicleId}");
+        }
+        else
+        {
+	        // Gérer les erreurs ici
+        }
+    }
+
+    private void AjouterMaintenance()
+    {
+	    IsAdd = true;
+    }
+
 	private void CancelEdit()
 	{
 		IsEditing = false;
+	}
+
+	private void CancelAdd()
+	{
+		IsAdd = false;
 	}
 }
 

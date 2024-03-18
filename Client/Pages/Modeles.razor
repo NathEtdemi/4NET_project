@@ -1,75 +1,136 @@
 ﻿@page "/modeles"
 @using Shared.ApiModels
+@using Shared.FormModels
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 
-<h3>Modeles</h3>
-<button class="btn btn-primary"
-		@onclick="@(OpenAddPopup)">
-	Ajouter
-</button>
-
-<AddVehicleForm OnAdd="OnAddVehicle" />
+<h3>Modèles</h3>
+<button class="btn btn-primary" @onclick="OpenAddPopup">Ajouter</button>
 
 @if (_models == null)
 {
-	<p><em>Loading...</em></p>
+    <p><em>Loading...</em></p>
 }
 else
 {
-	<table class="table table-striped table-bordered text-center">
-		<thead>
-		<tr>
-			<th>Marque</th>
-			<th>Modèle</th>
-			<th>Fréquence</th>
-			<th>Action</th>
-		</tr>
-		</thead>
-		<tbody>
-		@foreach (var model in _models)
-		{
-			<tr>
-				<td>@model.Brand.Name</td>
-				<td>@model.Name</td>
-				<td>@model.MaintenanceFrequency</td>
-				<td><button class="btn btn-danger" 
-				            @onclick="@(()=>OnDelete(model))">Delete</button></td>
-			</tr>
-		}
-		</tbody>
-	</table>
+    <table class="table table-striped table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Marque</th>
+                <th>Modèle</th>
+                <th>Fréquence d'entretien</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var model in _models)
+            {
+                <tr>
+                    <td>@model.Brand.Name</td>
+                    <td>@model.Name</td>
+                    <td>@model.MaintenanceFrequency</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(()=>OnDelete(model))">Supprimer</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
+@if (IsAdd)
+{
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un modèle de voiture</h5>
+                    <button type="button" class="close" @onclick="CloseModal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @onsubmit="AddCarModel">
+                        <div class="form-group">
+                            <label for="brandId">Marque</label>
+                            <select class="form-control" id="brandId" @bind="@ModelForm.BrandId">
+                                @foreach (var brand in Brands)
+                                {
+                                    <option value="@brand.Id">@brand.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelName">Nom du modèle</label>
+                            <input type="text" class="form-control" id="modelName" @bind="@ModelForm.Name" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="maintenanceFrequency">Fréquence d'entretien (en mois)</label>
+                            <input type="number" class="form-control" id="maintenanceFrequency" @bind="@ModelForm.MaintenanceFrequency" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
-	private IList<CarModelModel>? _models;
+    private IList<CarModelModel>? _models;
+    private List<BrandModel> Brands { get; set; }
+    private bool IsAdd { get; set; }
+    private CarModelFormModel ModelForm { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		_models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+        Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
+        ModelForm = new CarModelFormModel();
+    }
 
-	private async Task OnDelete(CarModelModel model)
-	{
-		var popupResult = await JSRuntime.InvokeAsync<bool>
-			("confirm", $"Etes vous sur de vouloir supprimer le modele:  '{model.Name}'?");
+    private async Task OnDelete(CarModelModel model)
+    {
+        var popupResult = await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le modèle: '{model.Name}'?");
+        if (popupResult == true)
+        {
+            var httpStatus = await HttpClient.DeleteAsync($"api/CarModel/{model.Id}");
+            if (!httpStatus.IsSuccessStatusCode)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", httpStatus.ReasonPhrase);
+            }
+            _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+        }
+    }
 
-		if (popupResult == true)
-		{
-			var httpStatus = await HttpClient.DeleteAsync($"api/CarModel/{model.Id}");
-			if (!httpStatus.IsSuccessStatusCode)
-			{
-				await JSRuntime.InvokeVoidAsync("alert", httpStatus.ReasonPhrase);
-			}
-		}
+    private async Task AddCarModel()
+    {
 
-		_models
-			= await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
-	}
+        var response = await HttpClient.PostAsJsonAsync("api/CarModel/AddCarModel", ModelForm);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadCarModels();
+            IsAdd = false;
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+        }
+    }
 
-	private async Task OpenAddPopup()
-	{
-		
-	}
+    private void OpenAddPopup()
+    {
+        IsAdd = true;
+    }
+
+    private void CloseModal()
+    {
+        IsAdd = false;
+    }
+
+    private async Task LoadCarModels()
+    {
+        _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+    }
 }

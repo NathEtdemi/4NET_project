@@ -1,5 +1,6 @@
 ﻿@using Shared.ApiModels
 @using Shared
+@using Shared.FormModels
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 
@@ -7,8 +8,6 @@
 
 <h3>Véhicules</h3>
 <button class="btn btn-primary" @onclick="OpenAddModal">Ajouter</button>
-
-<AddVehicleForm OnAdd="OnAddVehicle" />
 
 @if (_vehicles == null)
 {
@@ -18,100 +17,157 @@ else
 {
 	<table class="table table-striped table-bordered text-center">
 		<thead>
-			<tr>
-				<th>Marque</th>
-				<th>Modèle</th>
-				<th>Immatriculation</th>
-				<th>Action</th>
-			</tr>
+		<tr>
+			<th>Marque</th>
+			<th>Modèle</th>
+			<th>Immatriculation</th>
+			<th>Action</th>
+		</tr>
 		</thead>
 		<tbody>
-			@foreach (var vehicle in _vehicles)
-			{
-				<tr>
-					<td>@vehicle.CarModel.Brand.Name</td>
-					<td>@vehicle.CarModel.Name</td>
-					<td>@vehicle.NumberPlate</td>
-					<td><button class="btn btn-danger" 
-					            @onclick="@(()=>OnDelete(vehicle))">Delete</button></td>
-				</tr>
-			}
+		@foreach (var vehicle in _vehicles)
+		{
+			<tr>
+				<td>@vehicle.CarModel.Brand.Name</td>
+				<td>@vehicle.CarModel.Name</td>
+				<td>@vehicle.NumberPlate</td>
+				<td><button class="btn btn-danger" @onclick="@(()=>OnDelete(vehicle))">Delete</button></td>
+			</tr>
+		}
 		</tbody>
 	</table>
+}
 
+@if (IsAdd)
+{
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un véhicule</h5>
+                    <button type="button" class="close" @onclick="CloseModal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @onsubmit="AddVehicle">
+                        <div class="form-group">
+                            <label for="numberPlate">Immatriculation</label>
+                            <input type="text" class="form-control" id="numberPlate" @bind="@FormVehicle.NumberPlate" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="brandId">Marque</label>
+                            <select class="form-control" id="brandId" @bind="@SelectedBrandId" @onclick="LoadCarModels">
+                                @if (Brands != null)
+                                {
+                                    @foreach (var brand in Brands)
+                                    {
+                                        <option value="@brand.Id">@brand.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="carModelId">Modèle de voiture</label>
+                            <select class="form-control" id="carModelId" @bind="@FormVehicle.CarModelId">
+                                @if (CarModels != null)
+                                {
+                                    @foreach (var carModel in CarModels)
+                                    {
+                                        <option value="@carModel.Id">@carModel.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="buildYear">Année de création</label>
+                            <input type="number" class="form-control" id="buildYear" @bind="@FormVehicle.BuildYear" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="kmNumber">Kilométrage</label>
+                            <input type="number" class="form-control" id="kmNumber" @bind="@FormVehicle.KmNumber" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="energySource">Énergie</label>
+                            <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
+                                @foreach (var energy in Enum.GetValues(typeof(Energy)))
+                                {
+                                    <option value="@((int)energy)">@energy</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
-	private IList<VehicleModel>? _vehicles;
+    private IList<VehicleModel>? _vehicles;
+    private List<CarModelModel> CarModels { get; set; }
+    private List<BrandModel> Brands { get; set; }
+    private VehicleFormModel FormVehicle { get; set; }
+    private bool IsAdd { get; set; }
+    private int SelectedBrandId { get; set; }
 
-	private enum ModalMode
-	{
-		Add,
-		Duplicate,
-		Rename,
-		Closed
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        _vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+        Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
+        FormVehicle = new VehicleFormModel();
+    }
 
-	private ModalMode _modalMode=ModalMode.Closed;
+    private async Task OnDelete(VehicleModel vehicle)
+    {
+        var popupResult = await JSRuntime.InvokeAsync<bool>("confirm", $"Etes vous sur de vouloir supprimer le véhicule avec cette immatriculation:  '{vehicle.NumberPlate}'?");
+        if (popupResult == true)
+        {
+            var httpStatus = await HttpClient.DeleteAsync($"api/Vehicle/{vehicle.Id}");
+            if (!httpStatus.IsSuccessStatusCode)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", httpStatus.ReasonPhrase);
+            }
+            _vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+        }
+    }
 
-	public string? NewNumberPlate { get; set; }
+    private async Task AddVehicle()
+    {
+        var response = await HttpClient.PostAsJsonAsync("api/Vehicle/AddVehicle", FormVehicle);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadVehicles();
+            IsAdd = false;
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+        }
+    }
 
-	protected override async Task OnInitializedAsync()
-	{
-		_vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
-	}
+    private void OpenAddModal()
+    {
+        IsAdd = true;
+    }
 
-	private async Task OnDelete(VehicleModel vehicle)
-	{
-		var popupResult = await JSRuntime.InvokeAsync<bool>
-			("confirm", $"Etes vous sur de vouloir supprimer le véhicule avec cette immatriculation:  '{vehicle.NumberPlate}'?");
+    private void CloseModal()
+    {
+        IsAdd = false;
+    }
 
-		if (popupResult == true)
-		{
-			var httpStatus = await HttpClient.DeleteAsync($"api/Vehicle/{vehicle.Id}");
-			if (!httpStatus.IsSuccessStatusCode)
-			{
-				await JSRuntime.InvokeVoidAsync("alert", httpStatus.ReasonPhrase);
-			}
-		}
+    private async Task LoadVehicles()
+    {
+        _vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
+    }
 
-        
-
-		_vehicles
-			= await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
-	}
-
-	private async Task OnAddVehicle((string, int, int, int, Energy) data)
-	{
-		var (numberPlate, carModelId, buildYear, kmNumber, energy) = data;
-
-		var response = await HttpClient.PostAsync($"api/Vehicle/AddVehicle?numberPlate={Uri.EscapeDataString(numberPlate)}&carModelId={carModelId}&buildYear={buildYear}&KmNumber={kmNumber}&energy={energy}", null);
-		if (response.IsSuccessStatusCode)
-		{
-			await LoadVehicles();
-			CloseModal();
-		}
-		else
-		{
-			var errorMessage = await response.Content.ReadAsStringAsync();
-			await JSRuntime.InvokeVoidAsync("alert", errorMessage);
-		}
-	}
-
-
-	private void OpenAddModal()
-	{
-		Console.WriteLine("OpenAddModal() called");
-		_modalMode = ModalMode.Add;
-	}
-
-	private void CloseModal()
-	{
-		_modalMode = ModalMode.Closed;
-	}
-
-	private async Task LoadVehicles()
-	{
-		_vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
-	}
+    private async Task LoadCarModels()
+    {
+        if (SelectedBrandId != 0)
+        {
+            CarModels = await HttpClient.GetFromJsonAsync<List<CarModelModel>>($"api/CarModel/GetCarModelsByBrand?brandId={SelectedBrandId}");
+        }
+    }
 }
