@@ -1,5 +1,6 @@
 ﻿@page "/VehiculeDetail/{VehicleId:int}"
 @using Shared.ApiModels
+@using Shared
 @inject HttpClient HttpClient
 
 @if (Vehicle == null)
@@ -38,10 +39,8 @@ else
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Date</th>
                         <th>Kilométrage</th>
                         <th>Montant</th>
-                        <!-- Ajoutez d'autres en-têtes si nécessaire -->
                     </tr>
                 </thead>
                 <tbody>
@@ -72,7 +71,39 @@ else
                 </div>
                 <div class="modal-body">
                     <form @onsubmit="SaveChanges">
-                        <!-- Ajoutez les champs de formulaire pour modifier les informations du véhicule -->
+                        <div class="form-group">
+                            <label for="carModel">Modèle de voiture</label>
+                            <select class="form-control" id="carModel" @bind="Vehicle.CarModel.Id">
+                                @if (CarModels != null)
+                                {
+                                    @foreach (var carModel in CarModels)
+                                    {
+                                        <option value="@carModel.Id">@carModel.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="numberPlate">Plaque d'immatriculation</label>
+                            <input type="text" class="form-control" id="numberPlate" @bind="Vehicle.NumberPlate" />
+                        </div>
+                        <div class="form-group">
+                            <label for="buildYear">Année de création</label>
+                            <input type="text" class="form-control" id="buildYear" @bind="Vehicle.BuildYear" />
+                        </div>
+                        <div class="form-group">
+                            <label for="kmNumber">Kilométrage</label>
+                            <input type="text" class="form-control" id="kmNumber" @bind="Vehicle.KmNumber" />
+                        </div>
+                        <div class="form-group">
+                            <label for="energySource">Énergie</label>
+                            <select class="form-control" id="energySource" @bind="Vehicle.EnergySource">
+                                @foreach (var energy in Enum.GetValues(typeof(Energy)))
+                                {
+                                    <option value="@((int)energy)">@energy</option>
+                                }
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
                         <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuler</button>
                     </form>
@@ -82,37 +113,50 @@ else
     </div>
 }
 
+
 @code {
-    [Parameter]
-    public int VehicleId { get; set; }
+	[Parameter]
+	public int VehicleId { get; set; }
 
-    private VehicleModel Vehicle { get; set; }
-    private bool IsEditing { get; set; }
+	private VehicleModel Vehicle { get; set; }
+	private bool IsEditing { get; set; }
+	private List<CarModelModel> CarModels { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetWithMaintenances?vehicleId={VehicleId}");
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetWithMaintenances?vehicleId={VehicleId}");
+        await GetCarModelsByBrand(Vehicle.CarModel.BrandId);
+	}
 
-    // Méthode appelée lorsque le bouton Modifier est cliqué
-    private void ModifierClicked()
-    {
-        IsEditing = true;
-    }
+	private async Task GetCarModelsByBrand(int brandId)
+	{
+		CarModels = await HttpClient.GetFromJsonAsync<List<CarModelModel>>($"api/CarModel/GetCarModelsByBrand/?brandId={brandId}");
+	}
 
-    // Méthode appelée lorsque le formulaire est soumis pour enregistrer les modifications
-    private async Task SaveChanges()
-    {
-        // Mettez ici le code pour enregistrer les modifications
-        // Par exemple, vous pouvez envoyer une requête HTTP PUT pour mettre à jour les informations du véhicule
-        // Assurez-vous d'ajouter la logique appropriée pour gérer les erreurs et les succès de la mise à jour
-        IsEditing = false;
-    }
+	private void ModifierClicked()
+	{
+		IsEditing = true;
+		// Vous pouvez récupérer les modèles de voiture ici ou à un autre endroit approprié selon votre logique
+		GetCarModelsByBrand(Vehicle.CarModel.Brand.Id);
+	}
 
-    // Méthode appelée lorsque l'édition est annulée
-    private void CancelEdit()
-    {
-        IsEditing = false;
-    }
+	private async Task SaveChanges()
+	{
+		var response = await HttpClient.PutAsJsonAsync($"api/Vehicle/{Vehicle.Id}", Vehicle);
+		if (response.IsSuccessStatusCode)
+		{
+			IsEditing = false;
+		}
+		else
+		{
+			// Gérer les erreurs ici
+		}
+	}
+
+	private void CancelEdit()
+	{
+		IsEditing = false;
+	}
 }
+
 
