@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using project_API.Domain;
 using project_API.Domain.Factories;
 using Shared;
+using Shared.ApiModels;
+using Shared.FormModels;
 using static Client.Pages.Index;
 
 namespace project_API.Controllers
@@ -135,9 +137,45 @@ namespace project_API.Controllers
         //    return Ok();
         //}
 
-        
+        [HttpPut("{vehicleId}")]
+        public IActionResult EditVehicle([FromBody] VehicleFormModel vehicleFormModel)
+        {
+            var dbVehicle = VehicleRepository
+                .FirstOrDefault(x => x.Id == vehicleFormModel.Id);
 
-        [HttpDelete("{vehicleId}")]
+            if (dbVehicle == null)
+            {
+                _logger.LogWarning($"No vehicle found with Id: {vehicleFormModel.Id}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            var dbCarModel = _dataContext.Set<CarModel>()
+                .FirstOrDefault(x => x.Id == vehicleFormModel.CarModelId);
+
+            if (dbCarModel == null)
+            {
+                _logger.LogWarning($"No CarModel found with Id: {vehicleFormModel.CarModelId}");
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+
+            dbVehicle.CarModel = dbCarModel;
+            dbVehicle.CarModelId = vehicleFormModel.CarModelId;
+            dbVehicle.NumberPlate = vehicleFormModel.NumberPlate;
+            dbVehicle.BuildYear = vehicleFormModel.BuildYear;
+            dbVehicle.KmNumber = vehicleFormModel.KmNumber;
+            dbVehicle.EnergySource = vehicleFormModel.EnergySource;
+
+
+            VehicleRepository.Update(dbVehicle);
+
+            _dataContext.SaveChanges();
+            _logger.LogInformation($"The vehicle with Id: {dbVehicle.Id} has been edited");
+            return Ok();
+        }
+
+
+
+		[HttpDelete("{vehicleId}")]
         public IActionResult DeleteVehicle(int vehicleId)
         {
             var dbVehicle = VehicleRepository
