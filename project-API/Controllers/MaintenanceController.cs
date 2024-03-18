@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using project_API.Domain;
 using project_API.Domain.Factories;
+using Shared.FormModels;
 
 namespace project_API.Controllers
 {
@@ -22,23 +23,23 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddMaintenance")]
-        public IActionResult CreateMaintenance(int vehicleId, string workDescription)
+        public IActionResult CreateMaintenance([FromBody] MaintenanceFormModel maintenanceFormModel)
         {
-            var dbVehicle = _dataContext.Set<Vehicle>().FirstOrDefault(x => x.Id == vehicleId);
+            var dbVehicle = _dataContext.Set<Vehicle>().FirstOrDefault(x => x.Id == maintenanceFormModel.VehicleId);
 
             if (dbVehicle == null)
             {
-                _logger.LogWarning($"No vehicle found with Id: {vehicleId}");
+                _logger.LogWarning($"No vehicle found with Id: {maintenanceFormModel.VehicleId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
             var newMaintenance = new Maintenance()
             {
                 Vehicle = dbVehicle,
-                VehicleId = vehicleId,
+                VehicleId = maintenanceFormModel.VehicleId,
                 CurrentKmNumber = dbVehicle.KmNumber,
-                WorkDescription = workDescription
-            };
+                WorkDescription = maintenanceFormModel.WorkDescription
+			};
             MaintenanceRepository.Add(newMaintenance);
 
             _dataContext.SaveChanges();

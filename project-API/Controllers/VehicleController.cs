@@ -26,14 +26,14 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddVehicle")]
-        public IActionResult CreateVehicle(int carModelId, string numberPlate, int buildYear, int KmNumber, Energy energy)
+        public IActionResult CreateVehicle([FromBody] VehicleFormModel vehicleFormModel)
         {
             var dbCarModel = _dataContext.Set<CarModel>()
-                .FirstOrDefault(x => x.Id == carModelId);
+                .FirstOrDefault(x => x.Id == vehicleFormModel.CarModelId);
 
             if (dbCarModel == null)
             {
-                _logger.LogWarning($"No CarModel found with Id: {carModelId}");
+                _logger.LogWarning($"No CarModel found with Id: {vehicleFormModel.CarModelId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
@@ -41,11 +41,11 @@ namespace project_API.Controllers
             {
                 CarModel = dbCarModel,
                 CarModelId = dbCarModel.Id,
-                NumberPlate = numberPlate,
-                BuildYear = buildYear,
-                KmNumber = KmNumber,
-                EnergySource = energy
-            };
+                NumberPlate = vehicleFormModel.NumberPlate,
+                BuildYear = vehicleFormModel.BuildYear,
+                KmNumber = vehicleFormModel.KmNumber,
+                EnergySource = vehicleFormModel.EnergySource
+			};
 
             VehicleRepository.Add(newVehicle);
 
@@ -100,42 +100,6 @@ namespace project_API.Controllers
 
             return Ok(dbVehicle);
         }
-
-        //[HttpPut("{vehicleId}")]
-        //public IActionResult EditVehicle(int vehicleId, int modelId, string numberPlate, int buildYear, int kmNumber, Energy energy)
-        //{
-        //    var dbVehicle = VehicleRepository
-        //        .FirstOrDefault(x => x.Id == vehicleId);
-
-        //    if (dbVehicle == null)
-        //    {
-        //        _logger.LogWarning($"No vehicle found with Id: {vehicleId}");
-        //        return StatusCode(StatusCodes.Status404NotFound);
-        //    }
-
-        //    var dbCarModel = _dataContext.Set<CarModel>()
-        //        .FirstOrDefault(x => x.Id == modelId);
-
-        //    if (dbCarModel == null)
-        //    {
-        //        _logger.LogWarning($"No CarModel found with Id: {modelId}");
-        //        return StatusCode(StatusCodes.Status404NotFound);
-        //    }
-
-        //    dbVehicle.VModel = dbCarModel;
-        //    dbVehicle.CarModelId = modelId;
-        //    dbVehicle.NumberPlate = numberPlate;
-        //    dbVehicle.BuildYear = buildYear;
-        //    dbVehicle.KmNumber = kmNumber;
-        //    dbVehicle.EnergySource = energy;
-
-
-        //    VehicleRepository.Update(dbVehicle);
-
-        //    _dataContext.SaveChanges();
-        //    _logger.LogInformation($"The vehicle with Id: {dbVehicle.Id} has been edited");
-        //    return Ok();
-        //}
 
         [HttpPut("{vehicleId}")]
         public IActionResult EditVehicle([FromBody] VehicleFormModel vehicleFormModel)

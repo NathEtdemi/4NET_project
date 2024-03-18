@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using project_API.Domain;
 using project_API.Domain.Factories;
 using Shared.ApiModels;
+using Shared.FormModels;
 using System.Collections.Generic;
 
 namespace project_API.Controllers
@@ -25,24 +26,24 @@ namespace project_API.Controllers
         }
 
         [HttpPost("AddCarModel")]
-        public IActionResult CreateCarModel(int brandId, string name, int maintenanceFrequency)
+        public IActionResult CreateCarModel([FromBody] CarModelFormModel carModelFormModel)
         {
             DbSet<Brand> brandRepository = _dataContext.Set<Brand>();
             var dbBrand = brandRepository
-                .FirstOrDefault(x => x.Id == brandId);
+                .FirstOrDefault(x => x.Id == carModelFormModel.BrandId);
 
             if (dbBrand == null)
             {
-                _logger.LogWarning($"No brand found with Id: {brandId}");
+                _logger.LogWarning($"No brand found with Id: {carModelFormModel.BrandId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
             var newCarModel = new CarModel()
             {
                 Brand = dbBrand,
-                BrandId = brandId,
-                Name = name,
-                MaintenanceFrequency = maintenanceFrequency
-            };
+                BrandId = carModelFormModel.BrandId,
+                Name = carModelFormModel.Name,
+                MaintenanceFrequency = carModelFormModel.MaintenanceFrequency
+			};
             CarModelRepository.Add(newCarModel);
 
             _dataContext.SaveChanges();

@@ -4,7 +4,10 @@
 @inject IJSRuntime JSRuntime
 
 <h3>Modeles</h3>
-<button class="btn btn-primary"> Ajouter</button>
+<button class="btn btn-primary"
+		@onclick="@(OpenAddPopup)">
+	Ajouter
+</button>
 
 <AddVehicleForm OnAdd="OnAddVehicle" />
 
@@ -63,5 +66,10 @@ else
 
 		_models
 			= await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+	}
+
+	private async Task OpenAddPopup()
+	{
+		
 	}
 }
