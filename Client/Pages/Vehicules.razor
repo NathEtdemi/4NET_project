@@ -1,6 +1,7 @@
 ﻿@using Shared.ApiModels
 @using Shared
 @using Shared.FormModels
+@using System.Diagnostics
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 
@@ -58,6 +59,7 @@ else
                         <div class="form-group">
                             <label for="brandId">Marque</label>
                             <select class="form-control" id="brandId" @bind="@SelectedBrandId" @onclick="LoadCarModels">
+                                <option value="0">Sélectionner une marque</option>
                                 @if (Brands != null)
                                 {
                                     @foreach (var brand in Brands)
@@ -69,7 +71,8 @@ else
                         </div>
                         <div class="form-group">
                             <label for="carModelId">Modèle de voiture</label>
-                            <select class="form-control" id="carModelId" @bind="@FormVehicle.CarModelId">
+                            <select class="form-control" id="carModelId" @bind="@SelectedModelId" @onclick="SelectRelatedBrand">
+                                <option value="0">Sélectionner un modèle</option>
                                 @if (CarModels != null)
                                 {
                                     @foreach (var carModel in CarModels)
@@ -92,7 +95,7 @@ else
                             <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
                                 @foreach (var energy in Enum.GetValues(typeof(Energy)))
                                 {
-                                    <option value="@((int)energy)">@energy</option>
+                                    <option value="@(energy)">@energy</option>
                                 }
                             </select>
                         </div>
@@ -111,11 +114,13 @@ else
     private VehicleFormModel FormVehicle { get; set; }
     private bool IsAdd { get; set; }
     private int SelectedBrandId { get; set; }
+    private int SelectedModelId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         _vehicles = await HttpClient.GetFromJsonAsync<IList<VehicleModel>>("api/Vehicle");
         Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
+        CarModels = await HttpClient.GetFromJsonAsync<List<CarModelModel>>("api/CarModel");
         FormVehicle = new VehicleFormModel();
     }
 
@@ -144,7 +149,7 @@ else
         else
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage + FormVehicle.CarModelId);
         }
     }
 
@@ -165,9 +170,27 @@ else
 
     private async Task LoadCarModels()
     {
+        Console.WriteLine("Brand " + SelectedBrandId);
         if (SelectedBrandId != 0)
         {
             CarModels = await HttpClient.GetFromJsonAsync<List<CarModelModel>>($"api/CarModel/GetCarModelsByBrand?brandId={SelectedBrandId}");
+        }
+        SelectedModelId = 0;
+        FormVehicle.CarModelId = 0;
+    }
+
+    private async Task SelectRelatedBrand()
+    {
+        Console.WriteLine("Car model " + SelectedModelId);
+        if (SelectedModelId != 0)
+        {
+            FormVehicle.CarModelId = SelectedModelId;
+            Console.WriteLine("Form Car model " + FormVehicle.CarModelId);
+            var selectedCarModel = await HttpClient.GetFromJsonAsync<CarModelModel>($"api/CarModel/{SelectedModelId}");
+            if (selectedCarModel != null)
+            {
+                SelectedBrandId = selectedCarModel.BrandId;
+            }
         }
     }
 }

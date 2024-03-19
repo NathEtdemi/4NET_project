@@ -83,30 +83,30 @@ namespace project_API.Controllers
         }
 
         [HttpPut("{carModelId}")]
-        public IActionResult EditCarModel(int carModelId, int brandId, string name, int maintenanceFrequency)
+        public IActionResult EditCarModel([FromBody] CarModelFormModel carModelFormModel)
         {
             var dbCarModel = CarModelRepository
-                .FirstOrDefault(x => x.Id == carModelId);
+                .FirstOrDefault(x => x.Id == carModelFormModel.Id);
 
             if (dbCarModel == null)
             {
-                _logger.LogWarning($"No CarModel found with Id: {carModelId}");
+                _logger.LogWarning($"No CarModel found with Id: {carModelFormModel.Id}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
             DbSet<Brand> brandRepository = _dataContext.Set<Brand>();
             var dbBrand = brandRepository
-                .FirstOrDefault(x => x.Id == brandId);
+                .FirstOrDefault(x => x.Id == carModelFormModel.BrandId);
 
             if (dbBrand == null)
             {
-                _logger.LogWarning($"No brand found with Id: {brandId}");
+                _logger.LogWarning($"No brand found with Id: {carModelFormModel.BrandId}");
                 return StatusCode(StatusCodes.Status404NotFound);
             }
             dbCarModel.Brand = dbBrand;
-            dbCarModel.BrandId = brandId;
-            dbCarModel.Name = name;
-            dbCarModel.MaintenanceFrequency = maintenanceFrequency;
+            dbCarModel.BrandId = carModelFormModel.BrandId;
+            dbCarModel.Name = carModelFormModel.Name;
+            dbCarModel.MaintenanceFrequency = carModelFormModel.MaintenanceFrequency;
 
             CarModelRepository.Update(dbCarModel);
 

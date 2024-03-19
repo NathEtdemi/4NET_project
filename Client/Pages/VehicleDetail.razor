@@ -98,10 +98,10 @@ else
                         </div>
                         <div class="form-group">
                             <label for="energySource">Énergie</label>
-                            <select class="form-control" id="energySource" @bind="FormVehicle.EnergySource">
+                            <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
                                 @foreach (var energy in Enum.GetValues(typeof(Energy)))
                                 {
-                                    <option value="@((int)energy)">@energy</option>
+                                    <option value="@(energy)">@energy</option>
                                 }
                             </select>
                         </div>

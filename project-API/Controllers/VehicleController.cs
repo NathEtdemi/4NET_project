@@ -34,13 +34,13 @@ namespace project_API.Controllers
             if (dbCarModel == null)
             {
                 _logger.LogWarning($"No CarModel found with Id: {vehicleFormModel.CarModelId}");
-                return StatusCode(StatusCodes.Status404NotFound);
+                return StatusCode(StatusCodes.Status406NotAcceptable);
             }
 
 			if (!ModelState.IsValid)
 			{
-				return BadRequest(ModelState);
-			}
+                return BadRequest(ModelState);
+            }
 
 			var newVehicle = new Vehicle()
             {
