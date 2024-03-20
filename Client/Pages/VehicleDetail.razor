@@ -4,6 +4,7 @@
 @using Shared
 @inject HttpClient HttpClient
 
+<BackButton />
 @if (Vehicle == null)
 {
     <p><em>Loading...</em></p>
@@ -71,43 +72,47 @@ else
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form @onsubmit="SaveChanges">
-                        <div class="form-group">
-                            <label for="carModel">Modèle de voiture</label>
-                            <select class="form-control" id="carModel" @bind="FormVehicle.CarModelId">
-                                @if (CarModels != null)
-                                {
-                                    @foreach (var carModel in CarModels)
-                                    {
-                                        <option value="@carModel.Id">@carModel.Name</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="numberPlate">Plaque d'immatriculation</label>
-                            <input type="text" class="form-control" id="numberPlate" @bind="FormVehicle.NumberPlate" />
-                        </div>
-                        <div class="form-group">
-                            <label for="buildYear">Année de création</label>
-                            <input type="text" class="form-control" id="buildYear" @bind="FormVehicle.BuildYear" />
-                        </div>
-                        <div class="form-group">
-                            <label for="kmNumber">Kilométrage</label>
-                            <input type="text" class="form-control" id="kmNumber" @bind="FormVehicle.KmNumber" />
-                        </div>
-                        <div class="form-group">
-                            <label for="energySource">Énergie</label>
-                            <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
-                                @foreach (var energy in Enum.GetValues(typeof(Energy)))
-                                {
-                                    <option value="@(energy)">@energy</option>
-                                }
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuler</button>
-                    </form>
+                <EditForm Model="@FormVehicle" OnValidSubmit="SaveChanges">
+					<DataAnnotationsValidator/>
+		                <div class="form-group">
+			                <label for="carModel">Modèle de voiture</label>
+			                <select class="form-control" id="carModel" @bind="FormVehicle.CarModelId">
+				                @if (CarModels != null)
+				                {
+					                @foreach (var carModel in CarModels)
+					                {
+						                <option value="@carModel.Id">@carModel.Name</option>
+					                }
+				                }
+			                </select>
+			                <ValidationMessage For="@(() => FormVehicle.CarModelId)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="numberPlate">Plaque d'immatriculation</label>
+			                <input type="text" class="form-control" id="numberPlate" @bind="FormVehicle.NumberPlate"/>
+			                <ValidationMessage For="@(() => FormVehicle.NumberPlate)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="buildYear">Année de création</label>
+			                <input type="text" class="form-control" id="buildYear" @bind="FormVehicle.BuildYear"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="kmNumber">Kilométrage</label>
+			                <input type="text" class="form-control" id="kmNumber" @bind="FormVehicle.KmNumber"/>
+			                <ValidationMessage For="@(() => FormVehicle.KmNumber)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="energySource">Énergie</label>
+			                <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
+				                @foreach (var energy in Enum.GetValues(typeof(Energy)))
+				                {
+					                <option value="@(energy)">@energy</option>
+				                }
+			                </select>
+		                </div>
+		                <button type="submit" class="btn btn-primary">Enregistrer</button>
+		                <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuler</button>
+					</EditForm>
                 </div>
             </div>
         </div>
@@ -127,14 +132,16 @@ else
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form @onsubmit="SaveChanges">
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <input type="text" class="form-control" id="description" @bind="FormMaintenance.WorkDescription"/>
-                        </div>
-                        <button type="submit" class="btn btn-primary" @onclick="Add">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" @onclick="CancelAdd">Annuler</button>
-                    </form>
+                <EditForm Model="@FormMaintenance" OnValidSubmit="SaveChanges">
+		                <DataAnnotationsValidator />
+		                <div class="form-group">
+			                <label for="description">Description</label>
+			                <input type="text" class="form-control" id="description" @bind="FormMaintenance.WorkDescription"/>
+			                <ValidationMessage For="@(() => FormMaintenance.WorkDescription)"/>
+		                </div>
+		                <button type="submit" class="btn btn-primary" @onclick="Add">Enregistrer</button>
+		                <button type="button" class="btn btn-secondary" @onclick="CancelAdd">Annuler</button>
+                </EditForm>
                 </div>
             </div>
         </div>
@@ -155,20 +162,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         Vehicle = await HttpClient.GetFromJsonAsync<VehicleModel>($"api/Vehicle/GetWithMaintenances?vehicleId={VehicleId}");
-        FormVehicle = new VehicleFormModel
-            {
-                Id = Vehicle.Id,
-                CarModelId = Vehicle.CarModelId,
-                NumberPlate = Vehicle.NumberPlate,
-                BuildYear = Vehicle.BuildYear,
-                KmNumber = Vehicle.KmNumber,
-                EnergySource = Vehicle.EnergySource
-            };
+        FormVehicle = new VehicleFormModel();
 
-        FormMaintenance = new MaintenanceFormModel
-        {
-            VehicleId = Vehicle.Id
-        };
+        FormMaintenance = new MaintenanceFormModel();
         await GetCarModelsByBrand(Vehicle.CarModel.BrandId);
     }
 
@@ -179,6 +175,12 @@ else
 
     private void ModifierClicked()
     {
+	    FormVehicle.Id = Vehicle.Id;
+	    FormVehicle.CarModelId = Vehicle.CarModelId;
+	    FormVehicle.NumberPlate = Vehicle.NumberPlate;
+	    FormVehicle.BuildYear = Vehicle.BuildYear;
+	    FormVehicle.KmNumber = Vehicle.KmNumber;
+	    FormVehicle.EnergySource = Vehicle.EnergySource;
         IsEditing = true;
         // Vous pouvez récupérer les modèles de voiture ici ou à un autre endroit approprié selon votre logique
         GetCarModelsByBrand(Vehicle.CarModel.Brand.Id);
@@ -214,16 +216,19 @@ else
 
     private void AjouterMaintenance()
     {
+	    FormMaintenance.VehicleId = Vehicle.Id;
 	    IsAdd = true;
     }
 
 	private void CancelEdit()
 	{
+		FormVehicle = new VehicleFormModel();
 		IsEditing = false;
 	}
 
 	private void CancelAdd()
 	{
+		FormMaintenance = new MaintenanceFormModel();
 		IsAdd = false;
 	}
 }

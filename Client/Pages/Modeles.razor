@@ -5,6 +5,7 @@
 @inject IJSRuntime JSRuntime
 
 <h3>Modèles</h3>
+<BackButton />
 <button class="btn btn-primary" @onclick="OpenAddPopup">Ajouter</button>
 
 @if (_models == null)
@@ -31,7 +32,7 @@ else
 		        <td>@model.MaintenanceFrequency</td>
 		        <td>
 			        <button class="btn btn-danger" @onclick="@(()=>OnDelete(model))">Supprimer</button>
-                        <button class="btn btn-primary" @onclick="(()=>OpenEditPopup(model))">Modifier</button>
+			        <button class="btn btn-primary" @onclick="(()=>OpenEditPopup(model))">Modifier</button>
 		        </td>
 	        </tr>
         }

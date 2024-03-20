@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components
+<button class="btn btn-secondary" @onclick="GoBack">Retour</button>
+
+@code {
+	[Inject]
+	private NavigationManager NavigationManager { get; set; }
+
+	private void GoBack()
+	{
+		NavigationManager.NavigateTo(NavigationManager.BaseUri);
+	}
+}

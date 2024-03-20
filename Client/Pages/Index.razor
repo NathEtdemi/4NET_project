@@ -4,9 +4,10 @@
 @using System.Text.Json
 @using Shared.ApiModels
 @inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
 
 <h3>Véhicules en retard d'entretien</h3>
-
+<BackButton />
 @if (_overdueVehicles != null && _overdueVehicles.Any())
 {
     <table class="table table-striped">
@@ -16,16 +17,18 @@
                 <th>Modèle</th>
                 <th>Immatriculation</th>
                 <th>Retard de maintenance (km)</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var vehicle in _overdueVehicles)
             {
                 <tr>
-					<td><a href="@($"VehiculeDetail/{vehicle.Vehicle.Id}")">@vehicle.Vehicle.CarModel.Brand.Name</a></td>
+					<td>@vehicle.Vehicle.CarModel.Brand.Name</td>
 					<td>@vehicle.Vehicle.CarModel.Name</td>
 	                <td>@vehicle.Vehicle.NumberPlate</td>
 	                <td>-@vehicle.MaintenanceDelay</td>
+	                <td><button class="btn btn-primary" @onclick="(()=>ViewDetails(vehicle.Vehicle.Id))">Voir détails</button></td>
                 </tr>
             }
         </tbody>
@@ -53,6 +56,9 @@ else
 		public VehicleModel Vehicle { get; set; }
 		public int MaintenanceDelay { get; set; }
 	}
-
+	private void ViewDetails(int vehicleId)
+	{
+		NavigationManager.NavigateTo($"/VehiculeDetail/{vehicleId}");
+	}
 }
 

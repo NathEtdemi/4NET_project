@@ -4,10 +4,12 @@
 @using System.Diagnostics
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
 
 @page "/vehicules"
-
 <h3>Véhicules</h3>
+<BackButton />
 <button class="btn btn-primary" @onclick="OpenAddModal">Ajouter</button>
 
 @if (_vehicles == null)
@@ -32,7 +34,8 @@ else
 				<td>@vehicle.CarModel.Brand.Name</td>
 				<td>@vehicle.CarModel.Name</td>
 				<td>@vehicle.NumberPlate</td>
-				<td><button class="btn btn-danger" @onclick="@(()=>OnDelete(vehicle))">Delete</button></td>
+				<td><button class="btn btn-danger" @onclick="@(()=>OnDelete(vehicle))">Delete</button>
+					<button class="btn btn-primary" @onclick="(()=>ViewDetails(vehicle.Id))">Voir détails</button></td>
 			</tr>
 		}
 		</tbody>
@@ -51,56 +54,60 @@ else
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form @onsubmit="AddVehicle">
-                        <div class="form-group">
-                            <label for="numberPlate">Immatriculation</label>
-                            <input type="text" class="form-control" id="numberPlate" @bind="@FormVehicle.NumberPlate" required />
-                        </div>
-                        <div class="form-group">
-                            <label for="brandId">Marque</label>
-                            <select class="form-control" id="brandId" @bind="@SelectedBrandId" @onclick="LoadCarModels">
-                                <option value="0">Sélectionner une marque</option>
-                                @if (Brands != null)
-                                {
-                                    @foreach (var brand in Brands)
-                                    {
-                                        <option value="@brand.Id">@brand.Name</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="carModelId">Modèle de voiture</label>
-                            <select class="form-control" id="carModelId" @bind="@SelectedModelId" @onclick="SelectRelatedBrand">
-                                <option value="0">Sélectionner un modèle</option>
-                                @if (CarModels != null)
-                                {
-                                    @foreach (var carModel in CarModels)
-                                    {
-                                        <option value="@carModel.Id">@carModel.Name</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="buildYear">Année de création</label>
-                            <input type="number" class="form-control" id="buildYear" @bind="@FormVehicle.BuildYear" required />
-                        </div>
-                        <div class="form-group">
-                            <label for="kmNumber">Kilométrage</label>
-                            <input type="number" class="form-control" id="kmNumber" @bind="@FormVehicle.KmNumber" required />
-                        </div>
-                        <div class="form-group">
-                            <label for="energySource">Énergie</label>
-                            <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
-                                @foreach (var energy in Enum.GetValues(typeof(Energy)))
-                                {
-                                    <option value="@(energy)">@energy</option>
-                                }
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Ajouter</button>
-                    </form>
+	                <EditForm Model="@FormVehicle" OnValidSubmit="AddVehicle">
+		                <DataAnnotationsValidator />
+		                <div class="form-group">
+			                <label for="numberPlate">Immatriculation</label>
+			                <input type="text" class="form-control" id="numberPlate" @bind="@FormVehicle.NumberPlate" required/>
+			                <ValidationMessage For="@(() => FormVehicle.NumberPlate)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="brandId">Marque</label>
+			                <select class="form-control" id="brandId" @bind="@SelectedBrandId" @onclick="LoadCarModels">
+				                <option value="0">Sélectionner une marque</option>
+				                @if (Brands != null)
+				                {
+					                @foreach (var brand in Brands)
+					                {
+						                <option value="@brand.Id">@brand.Name</option>
+					                }
+				                }
+			                </select>
+		                </div>
+		                <div class="form-group">
+			                <label for="carModelId">Modèle de voiture</label>
+			                <select class="form-control" id="carModelId" @bind="@SelectedModelId" @onclick="SelectRelatedBrand">
+				                <option value="0">Sélectionner un modèle</option>
+				                @if (CarModels != null)
+				                {
+					                @foreach (var carModel in CarModels)
+					                {
+						                <option value="@carModel.Id">@carModel.Name</option>
+					                }
+				                }
+			                </select>
+			                <ValidationMessage For="@(() => FormVehicle.CarModelId)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="buildYear">Année de création</label>
+			                <input type="number" class="form-control" id="buildYear" @bind="@FormVehicle.BuildYear" required/>
+		                </div>
+		                <div class="form-group">
+			                <label for="kmNumber">Kilométrage</label>
+			                <input type="number" class="form-control" id="kmNumber" @bind="@FormVehicle.KmNumber" required/>
+			                <ValidationMessage For="@(() => FormVehicle.KmNumber)"/>
+		                </div>
+		                <div class="form-group">
+			                <label for="energySource">Énergie</label>
+			                <select class="form-control" id="energySource" @bind="@FormVehicle.EnergySource">
+				                @foreach (var energy in Enum.GetValues(typeof(Energy)))
+				                {
+					                <option value="@(energy)">@energy</option>
+				                }
+			                </select>
+		                </div>
+		                <button type="submit" class="btn btn-primary">Ajouter</button>
+	                </EditForm>
                 </div>
             </div>
         </div>
@@ -192,5 +199,10 @@ else
                 SelectedBrandId = selectedCarModel.BrandId;
             }
         }
+    }
+
+    private void ViewDetails(int vehicleId)
+    {
+	    NavigationManager.NavigateTo($"/VehiculeDetail/{vehicleId}");
     }
 }
