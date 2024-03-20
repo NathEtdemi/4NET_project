@@ -28,6 +28,11 @@ namespace project_API.Controllers
         [HttpPost("AddCarModel")]
         public IActionResult CreateCarModel([FromBody] CarModelFormModel carModelFormModel)
         {
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
             DbSet<Brand> brandRepository = _dataContext.Set<Brand>();
             var dbBrand = brandRepository
                 .FirstOrDefault(x => x.Id == carModelFormModel.BrandId);
@@ -38,12 +43,7 @@ namespace project_API.Controllers
                 return StatusCode(StatusCodes.Status404NotFound);
             }
 
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-
-			var newCarModel = new CarModel()
+            var newCarModel = new CarModel()
             {
                 Brand = dbBrand,
                 BrandId = carModelFormModel.BrandId,

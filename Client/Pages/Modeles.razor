@@ -23,17 +23,18 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var model in _models)
-            {
-                <tr>
-                    <td>@model.Brand.Name</td>
-                    <td>@model.Name</td>
-                    <td>@model.MaintenanceFrequency</td>
-                    <td>
-                        <button class="btn btn-danger" @onclick="@(()=>OnDelete(model))">Supprimer</button>
-                    </td>
-                </tr>
-            }
+        @foreach (var model in _models)
+        {
+	        <tr>
+		        <td>@model.Brand.Name</td>
+		        <td>@model.Name</td>
+		        <td>@model.MaintenanceFrequency</td>
+		        <td>
+			        <button class="btn btn-danger" @onclick="@(()=>OnDelete(model))">Supprimer</button>
+                        <button class="btn btn-primary" @onclick="(()=>OpenEditPopup(model))">Modifier</button>
+		        </td>
+	        </tr>
+        }
         </tbody>
     </table>
 }
@@ -50,7 +51,8 @@ else
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form @onsubmit="AddCarModel">
+                    <EditForm Model="@ModelForm" OnValidSubmit="AddCarModel">
+                        <DataAnnotationsValidator />
                         <div class="form-group">
                             <label for="brandId">Marque</label>
                             <select class="form-control" id="brandId" @bind="@ModelForm.BrandId">
@@ -59,17 +61,62 @@ else
                                     <option value="@brand.Id">@brand.Name</option>
                                 }
                             </select>
+                            <ValidationMessage For="@(() => ModelForm.BrandId)" />
                         </div>
                         <div class="form-group">
                             <label for="modelName">Nom du modèle</label>
-                            <input type="text" class="form-control" id="modelName" @bind="@ModelForm.Name" required />
+                            <InputText class="form-control" id="modelName" @bind-Value="@ModelForm.Name" />
+                            <ValidationMessage For="@(() => ModelForm.Name)" />
                         </div>
                         <div class="form-group">
                             <label for="maintenanceFrequency">Fréquence d'entretien (en mois)</label>
-                            <input type="number" class="form-control" id="maintenanceFrequency" @bind="@ModelForm.MaintenanceFrequency" required />
+                            <InputNumber class="form-control" id="maintenanceFrequency" @bind-Value="@ModelForm.MaintenanceFrequency" />
+                            <ValidationMessage For="@(() => ModelForm.MaintenanceFrequency)" />
                         </div>
                         <button type="submit" class="btn btn-primary">Ajouter</button>
-                    </form>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (IsEdit)
+{
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier un modèle de voiture</h5>
+                    <button type="button" class="close" @onclick="CloseEdit">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@ModelForm" OnValidSubmit="EditCarModel">
+                        <DataAnnotationsValidator />
+                        <div class="form-group">
+                            <label for="editBrandId">Marque</label>
+                            <select class="form-control" id="editBrandId" @bind="@ModelFormEdit.BrandId">
+                                @foreach (var brand in Brands)
+                                {
+                                    <option value="@brand.Id">@brand.Name</option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => ModelFormEdit.BrandId)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="editModelName">Nom du modèle</label>
+                            <InputText class="form-control" id="editModelName" @bind-Value="@ModelFormEdit.Name" />
+                            <ValidationMessage For="@(() => ModelFormEdit.Name)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="editMaintenanceFrequency">Fréquence d'entretien (en mois)</label>
+                            <InputNumber class="form-control" id="editMaintenanceFrequency" @bind-Value="@ModelFormEdit.MaintenanceFrequency" />
+                            <ValidationMessage For="@(() => ModelFormEdit.MaintenanceFrequency)" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Modifier</button>
+                    </EditForm>
                 </div>
             </div>
         </div>
@@ -81,12 +128,15 @@ else
     private List<BrandModel> Brands { get; set; }
     private bool IsAdd { get; set; }
     private CarModelFormModel ModelForm { get; set; }
+    private CarModelFormModel ModelFormEdit { get; set; }
+    private bool IsEdit { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
-        Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
-        ModelForm = new CarModelFormModel();
+	    _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+	    Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
+	    ModelForm = new CarModelFormModel();
+	    ModelFormEdit = new CarModelFormModel();
     }
 
     private async Task OnDelete(CarModelModel model)
@@ -118,6 +168,35 @@ else
             await JSRuntime.InvokeVoidAsync("alert", errorMessage);
         }
     }
+    private async Task EditCarModel()
+    {
+	    var response = await HttpClient.PutAsJsonAsync($"api/CarModel/{ModelForm.Id}", ModelForm);
+	    if (response.IsSuccessStatusCode)
+	    {
+		    await LoadCarModels();
+		    CloseEdit();
+	    }
+	    else
+	    {
+		    var errorMessage = await response.Content.ReadAsStringAsync();
+		    await JSRuntime.InvokeVoidAsync("alert", errorMessage);
+	    }
+    }
+
+    private void OpenEditPopup(CarModelModel model)
+    {
+	    ModelFormEdit.Id = model.Id;
+	    ModelFormEdit.Name = model.Name;
+	    ModelFormEdit.MaintenanceFrequency = model.MaintenanceFrequency;
+	    ModelFormEdit.BrandId = model.BrandId;
+	    IsEdit = true;
+    }
+
+    private void CloseEdit()
+    {
+	    ModelFormEdit = new CarModelFormModel();
+	    IsEdit = false;
+    }
 
     private void OpenAddPopup()
     {
@@ -126,6 +205,7 @@ else
 
     private void CloseModal()
     {
+	    ModelForm = new CarModelFormModel();
         IsAdd = false;
     }
 

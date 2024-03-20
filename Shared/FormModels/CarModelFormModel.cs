@@ -13,7 +13,8 @@ namespace Shared.FormModels
 		public int Id { get; set; }
 
 		[Required(ErrorMessage = "Le champ est requis")]
-		public int BrandId { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Veuillez sélectionner une marque")]
+        public int BrandId { get; set; }
 
 		[Required(ErrorMessage = "Le champ nom du modèle est requis")]
 		[StringLength(20, MinimumLength = 1, ErrorMessage = "Le nom du modèle doit être compris entre 1 et 20 caractères")]
