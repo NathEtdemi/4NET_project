@@ -190,6 +190,14 @@ namespace project_API.Controllers
                             MaintenanceDelay = delay
                         };
                     }
+                    if (latestMaintenance == null)
+                    {
+                        return new OverdueVehicle
+                        {
+                            Vehicle = VehicleFactory.ConvertToApiModel(x),
+                            MaintenanceDelay = x.KmNumber - x.CarModel.MaintenanceFrequency
+                        };
+                    }
                     return null;
                 })
                 .Where(x => x != null)
