@@ -10,7 +10,7 @@
 
 @if (_models == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Aucun modèle enregistré.</em></p>
 }
 else
 {
@@ -94,7 +94,7 @@ else
                     </button>
                 </div>
                 <div class="modal-body">
-                    <EditForm Model="@ModelForm" OnValidSubmit="EditCarModel">
+                    <EditForm Model="@ModelFormEdit" OnValidSubmit="EditCarModel">
                         <DataAnnotationsValidator />
                         <div class="form-group">
                             <label for="editBrandId">Marque</label>
@@ -134,10 +134,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-	    _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
-	    Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
-	    ModelForm = new CarModelFormModel();
-	    ModelFormEdit = new CarModelFormModel();
+        _models = await HttpClient.GetFromJsonAsync<IList<CarModelModel>>("api/CarModel");
+        Brands = await HttpClient.GetFromJsonAsync<List<BrandModel>>("api/Brand");
+        ModelForm = new CarModelFormModel();
+        ModelFormEdit = new CarModelFormModel();
     }
 
     private async Task OnDelete(CarModelModel model)
@@ -171,9 +171,11 @@ else
     }
     private async Task EditCarModel()
     {
-	    var response = await HttpClient.PutAsJsonAsync($"api/CarModel/{ModelForm.Id}", ModelForm);
-	    if (response.IsSuccessStatusCode)
+        var response = await HttpClient.PutAsJsonAsync($"api/CarModel/{ModelFormEdit.Id}", ModelFormEdit);
+        Console.WriteLine("Edit");
+        if (response.IsSuccessStatusCode)
 	    {
+            Console.WriteLine("Ok response");
 		    await LoadCarModels();
 		    CloseEdit();
 	    }

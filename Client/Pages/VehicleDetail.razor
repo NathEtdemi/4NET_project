@@ -3,17 +3,18 @@
 @using Shared.FormModels
 @using Shared
 @inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
 
 <BackButton />
 @if (Vehicle == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Aucun véhicule enregistré.</em></p>
 }
 else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3>Informations du véhicule</h3>
+            <h3>Informations du véhicule - <b>@Vehicle.NumberPlate</b></h3>
             <table class="table">
                 <tbody>
                     <tr>
@@ -33,7 +34,6 @@ else
                     </tr>
                 </tbody>
             </table>
-            <!-- Ajout du bouton Modifier -->
             <button class="btn btn-primary" @onclick="ModifierClicked">Modifier</button>
         </div>
         <div class="col-md-6">
@@ -182,7 +182,6 @@ else
 	    FormVehicle.KmNumber = Vehicle.KmNumber;
 	    FormVehicle.EnergySource = Vehicle.EnergySource;
         IsEditing = true;
-        // Vous pouvez récupérer les modèles de voiture ici ou à un autre endroit approprié selon votre logique
         GetCarModelsByBrand(Vehicle.CarModel.Brand.Id);
     }
 
@@ -196,7 +195,6 @@ else
 		}
 		else
 		{
-			// Gérer les erreurs ici
 		}
 	}
 
@@ -210,7 +208,6 @@ else
         }
         else
         {
-	        // Gérer les erreurs ici
         }
     }
 
